@@ -16,14 +16,17 @@ use wasm_bindgen::prelude::*;
 /// ```
 /// use rust::calculate_twos_complement_rust;
 ///
-/// assert_eq!(calculate_twos_complement_rust("1101"), "-3");
-/// assert_eq!(calculate_twos_complement_rust("0101"), "5");
-/// assert_eq!(calculate_twos_complement_rust("111"), "-1");
-/// assert_eq!(calculate_twos_complement_rust("invalid"), "Invalid input: Enter only 0s and 1s.");
+/// assert_eq!(calculate_twos_complement_rust("1101"), Ok(-3));
+/// assert_eq!(calculate_twos_complement_rust("0101"), Ok(5));
+/// assert_eq!(calculate_twos_complement_rust("111"), Ok(-1));
+/// assert_eq!(
+///     calculate_twos_complement_rust("invalid"),
+///     Err("Invalid input: Enter only 0s and 1s.".to_string())
+/// );
 /// ```
-pub fn calculate_twos_complement_rust(binary_input: &str) -> String {
+pub fn calculate_twos_complement_rust(binary_input: &str) -> Result<i32, String> {
     if binary_input.is_empty() || !binary_input.chars().all(|c| c == '0' || c == '1') {
-        return "Invalid input: Enter only 0s and 1s.".to_string();
+        return Err("Invalid input: Enter only 0s and 1s.".to_string());
     }
 
     let is_negative = binary_input.starts_with('1');
@@ -41,13 +44,17 @@ pub fn calculate_twos_complement_rust(binary_input: &str) -> String {
         decimal_value = i32::from_str_radix(binary_input, 2).unwrap();
     }
 
-    decimal_value.to_string()
+    Ok(decimal_value)
 }
 
 #[wasm_bindgen]
 pub fn calculate_twos_complement(binary_input: &str) -> String {
-    calculate_twos_complement_rust(binary_input)
+    match calculate_twos_complement_rust(binary_input) {
+        Ok(result) => result.to_string(),
+        Err(e) => e,
+    }
 }
+
 
 /// Converts a decimal number to its two's complement binary representation of a given bit size.
 ///
