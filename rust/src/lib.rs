@@ -1,7 +1,6 @@
 use wasm_bindgen::prelude::*;
 use thiserror::Error;
 
-/// Custom error type for our application.
 #[derive(Error, Debug, PartialEq)]
 pub enum TwosComplementError {
     #[error("Invalid input: Enter only 0s and 1s.")]
@@ -15,16 +14,6 @@ pub enum TwosComplementError {
 }
 
 /// Converts a two's complement binary string to its decimal value.
-///
-/// # Arguments
-///
-/// * `binary_input` - A binary string in two's complement format (e.g., "1101").
-///
-/// # Returns
-///
-/// A `Result<i32, TwosComplementError>` representing either the decimal value of the input binary string or an error.
-///
-/// # Examples
 ///
 /// ```
 /// use rust::calculate_twos_complement_rust;
@@ -79,9 +68,6 @@ pub fn calculate_twos_complement(binary_input: &str) -> String {
 /// * `decimal` - The signed decimal number to convert.
 /// * `size` - The bit size of the binary representation (must be greater than 0).
 ///
-/// # Returns
-///
-/// A `Result<String, TwosComplementError>` containing the binary representation in two's complement format, or an error if invalid.
 ///
 /// # Examples
 ///
