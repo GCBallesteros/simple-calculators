@@ -1,1 +1,3 @@
 rust/target
+*.d.ts
+rust/pkg/package.json
