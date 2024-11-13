@@ -1,8 +1,27 @@
 use wasm_bindgen::prelude::*;
 
-// Export the functions to JavaScript
-#[wasm_bindgen]
-pub fn calculate_twos_complement(binary_input: &str) -> String {
+/// Converts a two's complement binary string to its decimal value.
+///
+/// # Arguments
+///
+/// * `binary_input` - A binary string in two's complement format (e.g., "1101").
+///
+/// # Returns
+///
+/// A `String` representing the decimal value of the input binary string, or an error message
+/// if the input is invalid.
+///
+/// # Examples
+///
+/// ```
+/// use rust::calculate_twos_complement_rust;
+///
+/// assert_eq!(calculate_twos_complement_rust("1101"), "-3");
+/// assert_eq!(calculate_twos_complement_rust("0101"), "5");
+/// assert_eq!(calculate_twos_complement_rust("111"), "-1");
+/// assert_eq!(calculate_twos_complement_rust("invalid"), "Invalid input: Enter only 0s and 1s.");
+/// ```
+pub fn calculate_twos_complement_rust(binary_input: &str) -> String {
     if binary_input.is_empty() || !binary_input.chars().all(|c| c == '0' || c == '1') {
         return "Invalid input: Enter only 0s and 1s.".to_string();
     }
@@ -26,7 +45,33 @@ pub fn calculate_twos_complement(binary_input: &str) -> String {
 }
 
 #[wasm_bindgen]
-pub fn decimal_to_twos_complement(decimal: i32, size: usize) -> String {
+pub fn calculate_twos_complement(binary_input: &str) -> String {
+    calculate_twos_complement_rust(binary_input)
+}
+
+/// Converts a decimal number to its two's complement binary representation of a given bit size.
+///
+/// # Arguments
+///
+/// * `decimal` - The signed decimal number to convert.
+/// * `size` - The bit size of the binary representation (must be greater than 0).
+///
+/// # Returns
+///
+/// A `String` containing the binary representation in two's complement format, or an error
+/// message if the size is invalid or the number does not fit.
+///
+/// # Examples
+///
+/// ```
+/// use rust::decimal_to_twos_complement_rust;
+///
+/// assert_eq!(decimal_to_twos_complement_rust(5, 8), "00000101");
+/// assert_eq!(decimal_to_twos_complement_rust(-5, 8), "11111011");
+/// assert_eq!(decimal_to_twos_complement_rust(128, 8), "Error: Number does not fit in the specified size.");
+/// assert_eq!(decimal_to_twos_complement_rust(5, 0), "Error: Size must be greater than 0.");
+/// ```
+pub fn decimal_to_twos_complement_rust(decimal: i32, size: usize) -> String {
     if size == 0 {
         return "Error: Size must be greater than 0.".to_string();
     }
@@ -51,3 +96,7 @@ pub fn decimal_to_twos_complement(decimal: i32, size: usize) -> String {
     }
 }
 
+#[wasm_bindgen]
+pub fn decimal_to_tows_complement(decimal: i32, size: usize) -> String {
+    decimal_to_twos_complement_rust(decimal, size)
+}
