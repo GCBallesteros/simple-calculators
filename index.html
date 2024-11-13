@@ -1,19 +1,35 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-    <title>Two's Complement Binary to Decimal Converter</title>
+  <title>Two's Complement Binary to Decimal Converter</title>
 </head>
+
 <body>
-    <h2>Two's Complement Binary to Decimal Converter</h2>
-    <form id="converter-form">
-        <label for="binaryInput">Enter a binary number:</label><br>
-        <input type="text" id="binaryInput" required><br><br>
-        <input type="button" value="Convert" onclick="convertToDecimal()">
-    </form>
-    <h3>Decimal Output:</h3>
-    <p id="decimalOutput">--</p>
+  <h2>Two's Complement Binary to Decimal Converter</h2>
+  <form id="converter-form">
+    <label for="binaryInput">Enter a binary number:</label><br>
+    <input type="text" id="binaryInput" required><br><br>
+    <input type="button" value="Convert" onclick="convertToDecimal()">
+  </form>
+  <h3>Decimal Output:</h3>
+  <p id="decimalOutput">--</p>
 
-    <script src="converter.js"></script>
+  <script src="converter.js"></script>
+
+  <h2>Decimal to Two's Complement Converter</h2>
+  <form id="decimal-to-2s-complement-form">
+    <label for="decimalInput">Enter a decimal number:</label><br>
+    <input type="number" id="decimalInput" required><br><br>
+
+    <label for="sizeInput">Enter the size of the binary representation:</label><br>
+    <input type="number" id="sizeInput" required><br><br>
+
+    <input type="button" value="Convert" onclick="convertToTwosComplement()">
+  </form>
+
+  <h3>Binary Output:</h3>
+  <p id="binaryOutput">--</p>
 </body>
-</html>
 
+</html>
