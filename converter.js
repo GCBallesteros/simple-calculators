@@ -31,6 +31,29 @@ function calculateTwosComplement(binaryInput) {
   return decimalValue;
 }
 
+/**
+ * Converts a decimal number to its two's complement binary representation.
+ *
+ * This function takes a signed decimal number and converts it to a two's
+ * complement binary string representation with a specified bit size. If the
+ * number cannot fit within the specified bit size, an error message is
+ * returned. The two's complement representation allows negative numbers to be
+ * encoded in binary and supports efficient arithmetic operations.
+ *
+ * @param {number} decimal - The signed decimal number to convert.
+ * @param {number} size - The bit size of the two's complement representation.
+ *                        Must be greater than 0.
+ * @returns {string} - A string containing the binary representation of the
+ *                     number in two's complement format. If the size is not
+ *                     valid or the number does not fit within the specified size,
+ *                     an error message is returned.
+ *
+ * @example
+ * decimalToTwosComplement(5, 8);    // Returns "00000101"
+ * decimalToTwosComplement(-5, 8);   // Returns "11111011"
+ * decimalToTwosComplement(128, 8);  // Returns "Error: Number does not fit in the specified size."
+ * decimalToTwosComplement(5, -1);   // Returns "Error: Size must be greater than 0."
+ */
 function decimalToTwosComplement(decimal, size) {
   if (size <= 0) {
     return "Error: Size must be greater than 0.";
