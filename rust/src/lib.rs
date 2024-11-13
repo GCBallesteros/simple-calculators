@@ -66,25 +66,31 @@ pub fn calculate_twos_complement(binary_input: &str) -> String {
 /// ```
 /// use rust::decimal_to_twos_complement_rust;
 ///
-/// assert_eq!(decimal_to_twos_complement_rust(5, 8), "00000101");
-/// assert_eq!(decimal_to_twos_complement_rust(-5, 8), "11111011");
-/// assert_eq!(decimal_to_twos_complement_rust(128, 8), "Error: Number does not fit in the specified size.");
-/// assert_eq!(decimal_to_twos_complement_rust(5, 0), "Error: Size must be greater than 0.");
+/// assert_eq!(decimal_to_twos_complement_rust(5, 8), Ok("00000101".to_string()));
+/// assert_eq!(decimal_to_twos_complement_rust(-5, 8), Ok("11111011".to_string()));
+/// assert_eq!(
+///     decimal_to_twos_complement_rust(128, 8),
+///     Err("Error: Number does not fit in the specified size.".to_string())
+/// );
+/// assert_eq!(
+///     decimal_to_twos_complement_rust(5, 0),
+///     Err("Error: Size must be greater than 0.".to_string())
+/// );
 /// ```
-pub fn decimal_to_twos_complement_rust(decimal: i32, size: usize) -> String {
-    if size == 0 {
-        return "Error: Size must be greater than 0.".to_string();
+pub fn decimal_to_twos_complement_rust(decimal: i32, size: usize) -> Result<String, String> {
+    if size <= 0 {
+        return Err("Error: Size must be greater than 0.".to_string());
     }
 
     let max_positive = (1 << (size - 1)) - 1;
     let min_negative = -(1 << (size - 1));
 
     if decimal > max_positive || decimal < min_negative {
-        return "Error: Number does not fit in the specified size.".to_string();
+        return Err("Error: Number does not fit in the specified size.".to_string());
     }
 
     if decimal >= 0 {
-        format!("{:0>width$b}", decimal, width = size)
+        Ok(format!("{:0>width$b}", decimal, width = size))
     } else {
         let binary = format!("{:0>width$b}", (-decimal), width = size);
         let ones_complement: String = binary
@@ -92,11 +98,14 @@ pub fn decimal_to_twos_complement_rust(decimal: i32, size: usize) -> String {
             .map(|bit| if bit == '0' { '1' } else { '0' })
             .collect();
         let result = i32::from_str_radix(&ones_complement, 2).unwrap() + 1;
-        format!("{:0>width$b}", result, width = size)
+        Ok(format!("{:0>width$b}", result, width = size))
     }
 }
 
 #[wasm_bindgen]
-pub fn decimal_to_tows_complement(decimal: i32, size: usize) -> String {
-    decimal_to_twos_complement_rust(decimal, size)
+pub fn decimal_to_twos_complement(decimal: i32, size: usize) -> String {
+    match decimal_to_twos_complement_rust(decimal, size) {
+        Ok(result) => result,
+        Err(e) => e,
+    }
 }
