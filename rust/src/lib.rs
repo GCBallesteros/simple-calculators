@@ -1,6 +1,6 @@
-use wasm_bindgen::prelude::*;
-use thiserror::Error;
 use std::f64::consts::PI;
+use thiserror::Error;
+use wasm_bindgen::prelude::*;
 
 #[derive(Error, Debug, PartialEq)]
 pub enum TwosComplementError {
@@ -47,8 +47,8 @@ pub fn calculate_twos_complement_rust(binary_input: &str) -> Result<i32, TwosCom
             .map_err(TwosComplementError::ParseError)?;
     } else {
         // Positive binary number, parse normally
-        decimal_value = i32::from_str_radix(binary_input, 2)
-            .map_err(TwosComplementError::ParseError)?;
+        decimal_value =
+            i32::from_str_radix(binary_input, 2).map_err(TwosComplementError::ParseError)?;
     }
 
     Ok(decimal_value)
@@ -87,7 +87,10 @@ pub fn calculate_twos_complement(binary_input: &str) -> String {
 ///     Err(TwosComplementError::InvalidSize)
 /// );
 /// ```
-pub fn decimal_to_twos_complement_rust(decimal: i32, size: usize) -> Result<String, TwosComplementError> {
+pub fn decimal_to_twos_complement_rust(
+    decimal: i32,
+    size: usize,
+) -> Result<String, TwosComplementError> {
     if size <= 0 {
         return Err(TwosComplementError::InvalidSize);
     }
@@ -107,9 +110,8 @@ pub fn decimal_to_twos_complement_rust(decimal: i32, size: usize) -> Result<Stri
             .chars()
             .map(|bit| if bit == '0' { '1' } else { '0' })
             .collect();
-        let result = i32::from_str_radix(&ones_complement, 2)
-            .map_err(TwosComplementError::ParseError)?
-            + 1;
+        let result =
+            i32::from_str_radix(&ones_complement, 2).map_err(TwosComplementError::ParseError)? + 1;
         Ok(format!("{:0>width$b}", result, width = size))
     }
 }
@@ -122,22 +124,21 @@ pub fn decimal_to_twos_complement(decimal: i32, size: usize) -> String {
     }
 }
 
-
 /// Converts latitude and longitude on the WGS84 ellipsoid to Cartesian XYZ coordinates.
-/// 
+///
 /// # Parameters
 /// - `latitude`: Latitude in degrees. Positive values indicate north of the equator, and negative values indicate south.
 /// - `longitude`: Longitude in degrees. Positive values indicate east of the Prime Meridian, and negative values indicate west.
 /// - `height`: Height above the WGS84 ellipsoid in meters. This is the elevation from the ellipsoid surface.
-/// 
+///
 /// # Returns
 /// A tuple `(X, Y, Z)` representing the Cartesian coordinates in meters.
-/// 
+///
 /// # WGS84 Ellipsoid Constants
 /// - `a`: Semi-major axis, 6378137.0 meters.
 /// - `f`: Flattening factor, 1 / 298.257222101.
 /// - `e2`: Square of eccentricity, calculated as `2 * f - f * f`.
-/// 
+///
 /// # Example
 /// ```
 /// use rust::lat_lon_to_xyz_rust;
@@ -181,7 +182,7 @@ pub fn lat_lon_to_xyz_rust(latitude: f64, longitude: f64, height: f64) -> (f64, 
 }
 
 #[wasm_bindgen]
-pub fn lat_lon_to_xyz(latitude: f64, longitude: f64, height: f64) ->  Vec<f64> {
+pub fn lat_lon_to_xyz(latitude: f64, longitude: f64, height: f64) -> Vec<f64> {
     let (x, y, z) = lat_lon_to_xyz_rust(latitude, longitude, height);
     vec![x, y, z]
 }
@@ -207,24 +208,22 @@ fn get_mgrs_latitude_band(latitude: f64) -> Result<char, UTMZoneError> {
         return Err(UTMZoneError::InvalidLatitude(latitude));
     }
 
-    let bands: Vec<char> = ('C'..='X')
-        .filter(|&c| c != 'I' && c != 'O')
-        .collect();
+    let bands: Vec<char> = ('C'..='X').filter(|&c| c != 'I' && c != 'O').collect();
 
-    let index = ((latitude + 80.0) /  8.0).floor() as usize;
+    let index = ((latitude + 80.0) / 8.0).floor() as usize;
     Ok(bands[index])
 }
 
 /// Calculates the UTM zone number and MGRS latitude band for a given latitude and longitude.
-/// 
+///
 /// The function handles special UTM zone cases, such as areas in Norway and Svalbard, where
 /// UTM zones deviate from the regular 6-degree longitudinal spacing. It also incorporates
 /// the MGRS latitude bands, which range from 'C' to 'X' (excluding 'I' and 'O').
-/// 
+///
 /// # Returns
 /// - A `Result` containing the UTM zone number and MGRS latitude band, or an error if the inputs
 ///   are outside the valid latitude or longitude range.
-/// 
+///
 /// # Examples
 /// ```
 /// use rust::calculate_utm_zone;
@@ -261,10 +260,10 @@ fn get_mgrs_latitude_band(latitude: f64) -> Result<char, UTMZoneError> {
 ///
 /// // Edge case at the boundary of valid latitude for MGRS
 /// assert!(calculate_utm_zone(84.0, 15.0).is_err());
-/// 
+///
 /// // Error case: Latitude out of range
 /// assert!(calculate_utm_zone(90.1, 0.0).is_err());
-/// 
+///
 /// // Error case: Longitude out of range
 /// assert!(calculate_utm_zone(0.0, 181.0).is_err());
 /// ```
@@ -280,14 +279,17 @@ pub fn calculate_utm_zone(latitude: f64, longitude: f64) -> Result<(u32, char), 
         32
     } else if latitude > 71.0 && longitude >= 6.0 && longitude < 9.0 {
         31
-    } else if latitude > 71.0 && (longitude >= 9.0 && longitude < 12.0 || longitude >= 18.0 && longitude < 21.0) {
+    } else if latitude > 71.0
+        && (longitude >= 9.0 && longitude < 12.0 || longitude >= 18.0 && longitude < 21.0)
+    {
         33
-    } else if latitude > 71.0 && (longitude >= 21.0 && longitude < 24.0 || longitude >= 30.0 && longitude < 33.0) {
+    } else if latitude > 71.0
+        && (longitude >= 21.0 && longitude < 24.0 || longitude >= 30.0 && longitude < 33.0)
+    {
         35
     } else {
         ((longitude + 180.0) / 6.0).floor() as u32 % 60 + 1
     };
-
 
     let latitude_band = get_mgrs_latitude_band(latitude)?;
 
@@ -298,11 +300,9 @@ pub fn calculate_utm_zone(latitude: f64, longitude: f64) -> Result<(u32, char), 
 pub fn get_utm_zone_from_lat_lon(latitude: f64, longitude: f64) -> Result<JsValue, JsValue> {
     match calculate_utm_zone(latitude, longitude) {
         Ok((zone_number, latitude_band)) => {
-            let result = format!("{}{}", zone_number,  latitude_band);
+            let result = format!("{}{}", zone_number, latitude_band);
             Ok(JsValue::from_str(&result))
-        },
+        }
         Err(err) => Err(JsValue::from_str(&err.to_string())),
     }
 }
-
-
