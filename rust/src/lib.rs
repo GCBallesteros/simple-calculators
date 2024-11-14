@@ -149,7 +149,7 @@ pub fn decimal_to_twos_complement(decimal: i32, size: usize) -> String {
 ///
 /// // Point on the equator at the Prime Meridian with 1000 meters elevation
 /// let (x, y, z) = lat_lon_to_xyz_rust(0.0, 0.0, 1000.0);
-/// assert!((x - 6379137.0).abs() < 1e-6);
+/// assert!((x - 6378137.0 - 1000.0).abs() < 1e-6);
 /// assert!(y.abs() < 1e-6);
 /// assert!(z.abs() < 1e-6);
 ///
@@ -185,3 +185,124 @@ pub fn lat_lon_to_xyz(latitude: f64, longitude: f64, height: f64) ->  Vec<f64> {
     let (x, y, z) = lat_lon_to_xyz_rust(latitude, longitude, height);
     vec![x, y, z]
 }
+
+//
+// Find best UTM zone for a position
+//
+
+/// Custom error type for UTM zone calculation using `thiserror`
+#[derive(Debug, Error)]
+pub enum UTMZoneError {
+    #[error("Invalid longitude: {0}. Longitude must be between -180 and 180 degrees.")]
+    InvalidLongitude(f64),
+    #[error("Invalid latitude: {0}. Latitude must be between -90 and 90 degrees.")]
+    InvalidLatitude(f64),
+    #[error("{0}")]
+    CalculationError(String),
+}
+
+/// Returns the MGRS latitude band letter for a given latitude
+fn get_mgrs_latitude_band(latitude: f64) -> Result<char, UTMZoneError> {
+    if latitude < -80.0 || latitude >= 84.0 {
+        return Err(UTMZoneError::InvalidLatitude(latitude));
+    }
+
+    let bands: Vec<char> = ('C'..='X')
+        .filter(|&c| c != 'I' && c != 'O')
+        .collect();
+
+    let index = ((latitude + 80.0) /  8.0).floor() as usize;
+    Ok(bands[index])
+}
+
+/// Calculates the UTM zone number and MGRS latitude band for a given latitude and longitude.
+/// 
+/// The function handles special UTM zone cases, such as areas in Norway and Svalbard, where
+/// UTM zones deviate from the regular 6-degree longitudinal spacing. It also incorporates
+/// the MGRS latitude bands, which range from 'C' to 'X' (excluding 'I' and 'O').
+/// 
+/// # Returns
+/// - A `Result` containing the UTM zone number and MGRS latitude band, or an error if the inputs
+///   are outside the valid latitude or longitude range.
+/// 
+/// # Examples
+/// ```
+/// use rust::calculate_utm_zone;
+///
+/// // General case in the Northern Hemisphere
+/// let (zone, band) = calculate_utm_zone(40.0, -75.0).unwrap();
+/// assert_eq!(zone, 18);
+/// assert_eq!(band, 'T');
+///
+/// // General case in the Southern Hemisphere
+/// let (zone, band) = calculate_utm_zone(-33.0, 151.0).unwrap();
+/// assert_eq!(zone, 56);
+/// assert_eq!(band, 'H');
+///
+/// // Special case in Norway
+/// let (zone, band) = calculate_utm_zone(60.0, 5.0).unwrap();
+/// assert_eq!(zone, 32);
+/// assert_eq!(band, 'V');
+///
+/// // Special case in Svalbard
+/// let (zone, band) = calculate_utm_zone(72.0, 7.0).unwrap();
+/// assert_eq!(zone, 31);
+/// assert_eq!(band, 'X');
+///
+/// // Near the equator
+/// let (zone, band) = calculate_utm_zone(57.0, 1.0).unwrap();
+/// assert_eq!(zone, 31);
+/// assert_eq!(band, 'V');
+///
+/// // Another weird case between UK and Norway
+/// let (zone, band) = calculate_utm_zone(0.0, 33.0).unwrap();
+/// assert_eq!(zone, 36);
+/// assert_eq!(band, 'N');
+///
+/// // Edge case at the boundary of valid latitude for MGRS
+/// assert!(calculate_utm_zone(84.0, 15.0).is_err());
+/// 
+/// // Error case: Latitude out of range
+/// assert!(calculate_utm_zone(90.1, 0.0).is_err());
+/// 
+/// // Error case: Longitude out of range
+/// assert!(calculate_utm_zone(0.0, 181.0).is_err());
+/// ```
+pub fn calculate_utm_zone(latitude: f64, longitude: f64) -> Result<(u32, char), UTMZoneError> {
+    if latitude < -90.0 || latitude > 90.0 {
+        return Err(UTMZoneError::InvalidLatitude(latitude));
+    }
+    if longitude < -180.0 || longitude > 180.0 {
+        return Err(UTMZoneError::InvalidLongitude(longitude));
+    }
+
+    let zone_number = if latitude > 55.0 && latitude < 64.0 && longitude > 2.0 && longitude < 6.0 {
+        32
+    } else if latitude > 71.0 && longitude >= 6.0 && longitude < 9.0 {
+        31
+    } else if latitude > 71.0 && (longitude >= 9.0 && longitude < 12.0 || longitude >= 18.0 && longitude < 21.0) {
+        33
+    } else if latitude > 71.0 && (longitude >= 21.0 && longitude < 24.0 || longitude >= 30.0 && longitude < 33.0) {
+        35
+    } else {
+        ((longitude + 180.0) / 6.0).floor() as u32 % 60 + 1
+    };
+
+
+    let latitude_band = get_mgrs_latitude_band(latitude)?;
+
+    Ok((zone_number, latitude_band))
+}
+
+#[wasm_bindgen]
+pub fn get_utm_zone_from_lat_lon(latitude: f64, longitude: f64) -> Result<JsValue, JsValue> {
+    match calculate_utm_zone(latitude, longitude) {
+        Ok((zone_number, latitude_band)) => {
+            let result = format!("{}{}", zone_number,  latitude_band);
+            Ok(JsValue::from_str(&result))
+        },
+        Err(err) => Err(JsValue::from_str(&err.to_string())),
+    }
+}
+
+

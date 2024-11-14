@@ -2,6 +2,7 @@ import init, {
   calculate_twos_complement,
   decimal_to_twos_complement,
   lat_lon_to_xyz,
+  get_utm_zone_from_lat_lon,
 } from "./rust/pkg/rust.js";
 
 init().then(() => {
@@ -60,5 +61,29 @@ init().then(() => {
     xOutputElement.textContent = x.toFixed(6);
     yOutputElement.textContent = y.toFixed(6);
     zOutputElement.textContent = z.toFixed(6);
+  };
+  window.convertLatLonToUTMZone = function () {
+    const latitude = parseFloat(
+      document.getElementById("latitudeForUTMInput").value.trim(),
+    );
+    const longitude = parseFloat(
+      document.getElementById("longitudeForUTMInput").value.trim(),
+    );
+    const utmOutputElement = document.getElementById("utmOutput");
+
+    // Validate inputs
+    if (isNaN(latitude) || isNaN(longitude)) {
+      utmOutputElement.textContent = "Error: Invalid input.";
+      return;
+    }
+
+    try {
+      // Call the WebAssembly function and get the result
+      const utmZone = get_utm_zone_from_lat_lon(latitude, longitude);
+      utmOutputElement.textContent = `UTM Zone: ${utmZone}`;
+    } catch (e) {
+      // Handle any errors from the Rust function
+      utmOutputElement.textContent = `Error: ${e.message}`;
+    }
   };
 });
