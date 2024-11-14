@@ -1,5 +1,6 @@
 use wasm_bindgen::prelude::*;
 use thiserror::Error;
+use std::f64::consts::PI;
 
 #[derive(Error, Debug, PartialEq)]
 pub enum TwosComplementError {
@@ -121,3 +122,66 @@ pub fn decimal_to_twos_complement(decimal: i32, size: usize) -> String {
     }
 }
 
+
+/// Converts latitude and longitude on the WGS84 ellipsoid to Cartesian XYZ coordinates.
+/// 
+/// # Parameters
+/// - `latitude`: Latitude in degrees. Positive values indicate north of the equator, and negative values indicate south.
+/// - `longitude`: Longitude in degrees. Positive values indicate east of the Prime Meridian, and negative values indicate west.
+/// - `height`: Height above the WGS84 ellipsoid in meters. This is the elevation from the ellipsoid surface.
+/// 
+/// # Returns
+/// A tuple `(X, Y, Z)` representing the Cartesian coordinates in meters.
+/// 
+/// # WGS84 Ellipsoid Constants
+/// - `a`: Semi-major axis, 6378137.0 meters.
+/// - `f`: Flattening factor, 1 / 298.257222101.
+/// - `e2`: Square of eccentricity, calculated as `2 * f - f * f`.
+/// 
+/// # Example
+/// ```
+/// use rust::lat_lon_to_xyz_rust;
+/// // Point on the equator at sea level
+/// let (x, y, z) = lat_lon_to_xyz_rust(0.0, 0.0, 0.0);
+/// assert!((x - 6378137.0).abs() < 1e-6);
+/// assert!(y.abs() < 1e-6);
+/// assert!(z.abs() < 1e-6);
+///
+/// // Point on the equator at the Prime Meridian with 1000 meters elevation
+/// let (x, y, z) = lat_lon_to_xyz_rust(0.0, 0.0, 1000.0);
+/// assert!((x - 6379137.0).abs() < 1e-6);
+/// assert!(y.abs() < 1e-6);
+/// assert!(z.abs() < 1e-6);
+///
+/// // Point on the equator at 90 degrees East
+/// let (x, y, z) = lat_lon_to_xyz_rust(0.0, 90.0, 0.0);
+/// assert!(x.abs() < 1e-6);
+/// assert!((y - 6378137.0).abs() < 1e-6);
+/// assert!(z.abs() < 1e-6);
+/// ```
+pub fn lat_lon_to_xyz_rust(latitude: f64, longitude: f64, height: f64) -> (f64, f64, f64) {
+    // WGS84 ellipsoid constants
+    let a = 6378137.0; // Semi-major axis in meters
+    let f = 1.0 / 298.257222101; // Flattening
+    let e2 = 2.0 * f - f * f; // Square of eccentricity
+
+    // Convert latitude and longitude from degrees to radians
+    let lat_rad = latitude * PI / 180.0;
+    let lon_rad = longitude * PI / 180.0;
+
+    // Calculate the prime vertical radius of curvature
+    let n = a / (1.0 - e2 * lat_rad.sin().powi(2)).sqrt();
+
+    // Calculate X, Y, and Z coordinates
+    let x = (n + height) * lat_rad.cos() * lon_rad.cos();
+    let y = (n + height) * lat_rad.cos() * lon_rad.sin();
+    let z = (n * (1.0 - e2) + height) * lat_rad.sin();
+
+    (x, y, z)
+}
+
+#[wasm_bindgen]
+pub fn lat_lon_to_xyz(latitude: f64, longitude: f64, height: f64) ->  Vec<f64> {
+    let (x, y, z) = lat_lon_to_xyz_rust(latitude, longitude, height);
+    vec![x, y, z]
+}

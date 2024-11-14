@@ -32,6 +32,36 @@
 
     <h3>Binary Output:</h3>
     <p id="binaryOutput">--</p>
+
+    <h2>Latitude, Longitude, and Height to XYZ Converter</h2>
+    <form id="xyz-converter-form">
+      <label for="latitudeInput">Enter Latitude (degrees):</label><br />
+      <input type="number" id="latitudeInput" step="any" required /><br /><br />
+
+      <label for="longitudeInput">Enter Longitude (degrees):</label><br />
+      <input
+        type="number"
+        id="longitudeInput"
+        step="any"
+        required
+      /><br /><br />
+
+      <label for="heightInput">Enter Height (meters):</label><br />
+      <input type="number" id="heightInput" step="any" required /><br /><br />
+
+      <input
+        type="button"
+        value="Convert"
+        id="convertXYZButton"
+        onclick="convertLatLonToXYZ()"
+      />
+    </form>
+
+    <h3>XYZ Output:</h3>
+    <p>X: <span id="xOutput">--</span></p>
+    <p>Y: <span id="yOutput">--</span></p>
+    <p>Z: <span id="zOutput">--</span></p>
+
     <!-- Import the generated WASM JavaScript bindings -->
     <script type="module" src="main.js"></script>
   </body>

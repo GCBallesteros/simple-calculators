@@ -1,6 +1,7 @@
 import init, {
   calculate_twos_complement,
   decimal_to_twos_complement,
+  lat_lon_to_xyz,
 } from "./rust/pkg/rust.js";
 
 init().then(() => {
@@ -30,5 +31,34 @@ init().then(() => {
       decimalInput,
       sizeInput,
     );
+  };
+  window.convertLatLonToXYZ = function () {
+    const latitude = parseFloat(
+      document.getElementById("latitudeInput").value.trim(),
+    );
+    const longitude = parseFloat(
+      document.getElementById("longitudeInput").value.trim(),
+    );
+    const height = parseFloat(
+      document.getElementById("heightInput").value.trim(),
+    );
+
+    const xOutputElement = document.getElementById("xOutput");
+    const yOutputElement = document.getElementById("yOutput");
+    const zOutputElement = document.getElementById("zOutput");
+
+    if (isNaN(latitude) || isNaN(longitude) || isNaN(height)) {
+      xOutputElement.textContent = "Error: Invalid input.";
+      yOutputElement.textContent = "Error: Invalid input.";
+      zOutputElement.textContent = "Error: Invalid input.";
+      return;
+    }
+
+    const [x, y, z] = lat_lon_to_xyz(latitude, longitude, height);
+
+    // Display the results
+    xOutputElement.textContent = x.toFixed(6);
+    yOutputElement.textContent = y.toFixed(6);
+    zOutputElement.textContent = z.toFixed(6);
   };
 });
